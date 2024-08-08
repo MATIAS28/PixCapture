@@ -41,7 +41,8 @@ ipcMain.on('capture-screenshot-preview', async (event, url, previewsDirectory) =
     await browser.close();
     event.reply('preview-saved', screenshotPath);
   } catch (e) {
-    console.log(e);
+    await browser.close();
+    event.reply('error-captured', 'URL no valida');
   }
 });
 

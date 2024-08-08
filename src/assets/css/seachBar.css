@@ -23,6 +23,10 @@ button {
     cursor: pointer;
   }
 
+  button:disabled{
+    color: #ccc;
+  }
+
 input[type="text"] {
     -webkit-appearance: none;
     appearance: none;

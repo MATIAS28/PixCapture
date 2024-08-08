@@ -4,10 +4,13 @@ const path = require('path')
 
 //Variables 
 const previewsDirectory = path.join(__dirname, '../imgPreviews')
+const urlValidator = new RegExp('^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$')
+
 let searchButton
 let download
 let downloadButton
 let loader
+let url
 
 //Busca y elimina todos los archivos de la carpeta previews
 function deletePreviews (files){
@@ -19,9 +22,9 @@ function deletePreviews (files){
 
 //Busca y guarda una preview
 function getPreview (){
-    const url = document.getElementById('searchInput').value
     const img = document.getElementById('preview')
     const files = fs.readdirSync(previewsDirectory)
+    url = document.getElementById('searchInput').value
     
     //Elimina el elemento imagen de la preview anterior
     if (img) {
@@ -32,19 +35,16 @@ function getPreview (){
     if (files.length > 0) deletePreviews(files)
 
     //Desactiva el boton de busqueda y emite la funcion de descargar una previev de la pagina
-    if (url.length > 0) {
+    if (url.length > 5) {
         loader.style.display = 'flex'
         searchButton.disabled = true;
         ipcRenderer.send('capture-screenshot-preview', url, previewsDirectory);
     }
-
-    if (url.length == 0) handlerToast('Ingresa una url valida')
 }
 
 //Descarga la imagen en el formato seleccionado
 function downloadScreenshot (){
     const format = document.getElementById('format').value
-    const url = document.getElementById('searchInput').value
     
     //Dispara el toast
     handlerToast('Espera...')
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loader = document.getElementById('loader-container')
     download.style.display = 'none'
 
-    searchButton.addEventListener('click', () => getPreview ())
+    searchButton.addEventListener('click', () => getPreview())
     downloadButton.addEventListener('click', () => downloadScreenshot())
     portafolio.addEventListener('click', () => ipcRenderer.send('go-to-portafolio'))
 });
@@ -110,3 +110,9 @@ ipcRenderer.on('preview-saved', (event, directory) => {
 
 //Dispara un toast para avisar que se ha descargado correctamente
 ipcRenderer.on('screenshot-captured', (event, msg) => handlerToast(msg));
+
+ipcRenderer.on('error-captured', (event, msg) => {
+  searchButton.disabled = false;
+  loader.style.display = 'none'
+  handlerToast(msg)
+});
